@@ -1,6 +1,8 @@
 const express=require('express'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 const app=express(),PORT=process.env.PORT||3000,PASS=process.env.ADMIN_PASSWORD||'admin123';
-const DB=path.join(__dirname,'data','db.json'),UP=path.join(__dirname,'uploads');
+const STORAGE=path.join(__dirname,'data');
+const DB=path.join(STORAGE,'db.json');
+const UP=path.join(STORAGE,'uploads');
 fs.mkdirSync(UP,{recursive:true});
 if(!fs.existsSync(DB))fs.writeFileSync(DB,JSON.stringify(require('./seed.js'),null,2));
 const load=()=>JSON.parse(fs.readFileSync(DB,'utf8')),save=d=>fs.writeFileSync(DB,JSON.stringify(d,null,2));
@@ -73,4 +75,4 @@ app.post('/api/admin/:c',auth,(q,r)=>{if(!COLS.includes(q.params.c))return r.sen
 app.put('/api/admin/:c/:id',auth,(q,r)=>{if(!COLS.includes(q.params.c))return r.sendStatus(404);const d=load(),a=d[q.params.c],i=a.findIndex(x=>x.id===q.params.id);if(i<0)return r.sendStatus(404);a[i]={...q.body,id:a[i].id};save(d);r.json(a[i])});
 app.delete('/api/admin/:c/:id',auth,(q,r)=>{if(!COLS.includes(q.params.c))return r.sendStatus(404);const d=load();d[q.params.c]=d[q.params.c].filter(x=>x.id!==q.params.id);save(d);r.json({ok:1})});
 
-app.listen(PORT,()=>console.log(`Upper Crust running → http://localhost:${PORT}  |  Admin → http://localhost:${PORT}/admin  (password: ${PASS})`));
+app.listen(PORT,'0.0.0.0',()=>console.log(`Upper Crust running on port ${PORT}`));
